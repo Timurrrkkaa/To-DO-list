@@ -1,0 +1,22 @@
+{
+  "name": "one-board",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-Board : rituels, tâches et focus, version application.",
+  "scripts": {
+    "build": "python3 build.py",
+    "serve": "python3 -m http.server 8080 --directory www",
+    "sync": "python3 build.py && npx cap sync",
+    "android": "python3 build.py && npx cap sync android && npx cap open android",
+    "ios": "python3 build.py && npx cap sync ios && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}

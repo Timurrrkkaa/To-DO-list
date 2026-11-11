@@ -1,0 +1,10 @@
+{
+  "appId": "app.oneboard.tracker",
+  "appName": "One-Board",
+  "webDir": "www",
+  "backgroundColor": "#0c0f0d",
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "LocalNotifications": { "smallIcon": "ic_stat_icon_config_sample", "iconColor": "#86F27A" }
+  }
+}
