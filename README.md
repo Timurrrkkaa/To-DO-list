@@ -66,3 +66,8 @@ La synchronisation entre appareils (comptes) n'est pas incluse : les données so
 - Pas testé sur un vrai téléphone ni sur iPhone : tests faits dans un navigateur simulé (installation, hors ligne, rappels).
 - Les polices viennent de Google Fonts : la première ouverture se fait en ligne, ensuite elles sont mises en cache.
 - L'icône est un dessin simple (`icon-source-1024.png`) : remplace-la par la tienne si tu veux, puis régénère les tailles.
+
+## 3. GitHub
+Les workflows sont déjà dans `.github/workflows/` :
+- **pages.yml** : publie `www/` sur GitHub Pages à chaque modification (Settings → Pages → Source : « GitHub Actions »).
+- **android.yml** : onglet Actions → « Build Android APK » → Run workflow, puis télécharge `one-board-debug-apk` (version de test, à installer en autorisant les sources inconnues).
