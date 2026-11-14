@@ -37,6 +37,16 @@
     _google: function () { return init().then(function () { return auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }); },
     reset: function (e) { return init().then(function () { return auth.sendPasswordResetEmail(e); }); },
     signOut: function () { return init().then(function () { return auth.signOut(); }); },
+    /* Supprime les données en ligne puis le compte (mot de passe redemandé par sécurité). */
+    deleteAccount: function (pw) {
+      return init().then(function () {
+        var u = auth.currentUser, cred = firebase.auth.EmailAuthProvider.credential(u.email, pw);
+        return u.reauthenticateWithCredential(cred).then(function () {
+          var r = ref();
+          return r.delete().catch(function () { return r.set({ d: '', t: Date.now(), v: 1 }); });
+        }).then(function () { return u.delete(); });
+      });
+    },
     transact: function (fn) {
       return init().then(function () {
         var r = ref();

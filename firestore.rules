@@ -8,7 +8,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['d', 't', 'v'])
         && request.resource.data.d is string
         && request.resource.data.d.size() < 900000;
-      allow delete: if false;
+      allow delete: if request.auth != null && request.auth.uid == uid;
     }
     // Tout le reste est fermé.
     match /{document=**} {
