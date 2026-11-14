@@ -19,6 +19,8 @@ html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:10
 body{margin:0}
 img{max-width:100%}
 </style>
+<script>window.OB_FIREBASE={"apiKey": "AIzaSyByXefRJYX8sa9Ce-FrD0dM2_NBlRwstVM", "authDomain": "to-do-list-e29b4.firebaseapp.com", "projectId": "to-do-list-e29b4", "storageBucket": "to-do-list-e29b4.firebasestorage.app", "messagingSenderId": "112123831042", "appId": "1:112123831042:web:f5b7e6d14d5f0cd92c981b"};</script>
+<script src="fb.js"></script>
 </head>
 <body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,7 +104,8 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(34px, 
 /* Colonnes */
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
-.ph { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.ph { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 14px; }
+.ph h2 { white-space: nowrap; }
 h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -.01em; }
 .meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
 
@@ -197,7 +200,8 @@ button:disabled { cursor: default; }
 .bcol.cur .bwrap i { background: var(--accent); }
 .bcol em, .bcol u { font-style: normal; text-decoration: none; font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space: nowrap; height: 13px; }
 .bcol u { color: var(--fg); }
-.stnav { display: flex; align-items: center; gap: 6px; }
+.stnav { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; min-width: 0; }
+.stnav .meta, .stnav .btn { white-space: nowrap; }
 .trow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 9px 0; border-top: 1px solid var(--line); }
 .trow:first-child { border-top: 0; }
 .trow .nm { overflow-wrap: anywhere; font-weight: 500; }
@@ -214,6 +218,8 @@ button:disabled { cursor: default; }
 .bkrow .btn { flex: 1 1 120px; }
 .bkinfo { font-size: 13px; color: var(--muted); margin: 0 0 10px; line-height: 1.45; }
 .bkinfo.due { color: var(--accent); }
+#sySec .bkrow + .bkrow, #sySec .bkinfo + .bkrow { margin-top: 8px; }
+.sycol { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
 .bkmsg { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); font-size: 13px; line-height: 1.45; display: flex; flex-direction: column; gap: 8px; }
 .bkmsg textarea { width: 100%; min-height: 84px; resize: vertical; font: 11px/1.4 var(--font-mono); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
 .addform { display: flex; gap: 8px; margin-top: 12px; }
@@ -362,6 +368,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
 .crow + .crow { margin-top: 14px; }
 .cgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .ctile { border: 1px solid var(--line); background: var(--panel-2); border-radius: 10px; padding: 6px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; font-weight: 500; min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.ctile span { max-width: 100%; overflow-wrap: anywhere; hyphens: auto; font-size: 11px; line-height: 1.2; text-align: center; }
 .ctile svg { width: 100%; max-width: 96px; height: auto; display: block; }
 .ctile:hover { border-color: var(--faint); }
 .ctile.locked svg { filter: grayscale(1) brightness(.8); opacity: .55; }
@@ -637,6 +644,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   <div id="brkSec"><p class="lab" data-i18n="brkLab"></p><div class="durs" id="brkBtns"></div><p class="bkinfo" data-i18n="brkHint" style="margin:10px 0 0"></p></div>
   <div id="ntSec"><p class="lab" data-i18n="ntLab"></p><div id="ntBody" style="display:flex;flex-direction:column;gap:10px"></div></div>
   <div id="vacSec"><p class="lab" data-i18n="vacLab"></p><p class="bkinfo" id="vacInfo"></p><div class="bkrow" id="vacBtns"></div></div>
+  <div id="sySec" hidden></div>
   <div id="bkSec">
     <p class="lab" data-i18n="bkLab"></p>
     <p class="bkinfo" id="bkInfo"></p>
@@ -696,6 +704,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       pause: 'Pause', resume: 'Reprendre', stop: 'Terminer', paused: 'En pause', building: 'Construction de l’île', rem: 'restant', elapsed: 'écoulé', nextIsl: 'Prochaine île',
       islTitle: 'Archipel', isl: { one: '{n} île', other: '{n} îles' },
       pickC: 'Choisis un pays : chaque île sera une ville de ce pays.', noIsl: 'Aucune île pour l’instant. Lance une tâche avec ▶.',
+      syLab: 'Synchronisation', syOffNote: 'Connecte-toi pour retrouver tes données sur tous tes appareils.', syEm: 'E-mail', syPw: 'Mot de passe (6 caractères min.)', syIn: 'Se connecter', syUp: 'Créer un compte', syGo: 'Continuer avec Google', syReset: 'Mot de passe oublié', syAs: 'Connecté : {e}', syNow: 'Synchroniser', syOut: 'Se déconnecter', syOk: 'Synchronisé à {d}', syBusy: 'Synchronisation…', syOff: 'Hors ligne : nouvel essai automatique', syErr: 'Erreur de synchronisation', syWait: 'Connexion…', syResetSent: 'E-mail de réinitialisation envoyé.', syNeed: 'Saisis ton e-mail et ton mot de passe.', syBad: 'E-mail ou mot de passe incorrect.', syTaken: 'Un compte existe déjà avec cet e-mail.', syWeak: 'Mot de passe trop court (6 caractères min.).', syMail: 'E-mail invalide.', syNet: 'Pas de connexion réseau.', syMany: 'Trop d’essais, réessaie dans quelques minutes.', syGen: 'Échec : {m}',
       bkLab: 'Sauvegarde', bkExport: 'Exporter', bkImport: 'Importer', bkNever: 'Aucune sauvegarde pour l’instant. Tes données ne vivent que dans ce navigateur.', bkLast: 'Dernière sauvegarde : {d}', bkDue: 'Pense à sauvegarder : ton archipel n’existe que dans ce navigateur.', bkOk: 'Sauvegarde enregistrée.', bkNo: 'Export annulé.', bkManual: 'L’enregistrement direct n’est pas disponible ici. Copie ce texte et colle-le dans un fichier .json.', bkCopy: 'Copier', bkCopied: 'Copié', bkBad: 'Ce fichier n’est pas une sauvegarde One-Board valide.', bkAsk: 'Remplacer tes données actuelles par cette sauvegarde ({h} rituels, {t} tâches, {i} îles, du {d}) ?', bkReplace: 'Remplacer', bkCancel: 'Annuler', bkDone: 'Sauvegarde importée.', edit: 'Modifier', editHabit: 'Modifier le rituel', editTask: 'Modifier la tâche', nameLab: 'Nom', dateLab: 'Date', save: 'Enregistrer', delBtn: 'Supprimer', schLab: 'Fréquence', schD: 'Chaque jour', schW: 'Jours précis', schN: 'Par semaine', nPer: '{n} / semaine', weekU: 'sem.', undoDel: '« {x} » supprimé', undo: 'Annuler', restored: 'Île restaurée.', goalMet: 'Objectif de la semaine atteint', restDay: 'Pas prévu aujourd’hui', ruinRestore: 'Restaurer', ruinNote: 'Une restauration possible par semaine.', tabStats: 'Stats', stTitle: 'Statistiques', stWeekT: 'Semaine', st12: '12 dernières semaines', stTasks: 'Temps par tâche', stHab: 'Rituels · 30 jours', achTitle: 'Succès', stTotal: 'Focus total', stWeekNow: 'Cette semaine', stWeekTot: 'Total : {t}', stVs: '{p} % vs semaine précédente', stAvg: 'Moyenne : {t} / semaine', rng7: '7 jours', rng30: '30 jours', rngAll: 'Tout', stNone: 'Pas encore de focus enregistré sur cette période. Lance une tâche avec ▶.', lvlN: 'niveau {n}', xpHint: 'La difficulté compte : le focus rapporte ×1, ×1,5 ou ×2 d’XP, et finir une tâche donne +5, +10 ou +20 XP.', xpBonus: 'Tâche terminée : +{n} XP', achToast: 'Succès : {x} (+25 XP)', vacLab: 'Mode vacances', vacDesc: 'Gèle la destruction des îles et protège tes séries pendant 3, 7 ou 14 jours. Ensuite, 30 jours avant la prochaine pause.', vacN: '{n} jours', vacEnd: 'Reprendre', vacBanner: 'Mode vacances jusqu’au {d}. Tes îles et tes séries sont protégées.', vacLock: 'Prochaines vacances possibles à partir du {d}.', vacGuard: 'Vacances jusqu’au {d} : tes îles ne risquent rien.', vacSub: 'Vacances : rien à cocher aujourd’hui.', a1n: 'Premier cap', a1d: 'Construire ta première île.', a2n: 'Archipel', a2d: 'Avoir 10 îles.', a3n: 'Empire des mers', a3d: 'Avoir 25 îles.', a4n: 'Dix heures', a4d: 'Cumuler 10 h de focus.', a5n: 'Cinquante heures', a5d: 'Cumuler 50 h de focus.', a6n: 'Une semaine', a6d: 'Série de focus de 7 jours.', a7n: 'Marathon', a7d: '4 h de focus en une journée.', a8n: 'Dur à cuire', a8d: 'Terminer une tâche difficile.', a9n: 'Cœur de pierre', a9d: 'Terminer 10 tâches difficiles.', a10n: 'Journée parfaite', a10d: 'Cocher 100 % d’une journée.', a11n: 'Globe-trotter', a11d: 'Construire des îles dans 3 pays.', a12n: 'Collectionneur', a12d: 'Débloquer les 4 villes d’un pays.', a13n: 'Île rare', a13d: 'Obtenir une île ★.', a14n: 'Phénix', a14d: 'Restaurer une île détruite.', a15n: 'Rituel de fer', a15d: 'Série de 14 jours sur un rituel.', late: 'En retard · {d}', recLab: 'Répétition', recNone: 'Jamais', recW: 'Chaque semaine', recM: 'Chaque mois', recN: 'Tous les N jours', recMt: 'Chaque mois', recNd: 'Tous les {n} jours', projLab: 'Projet', projAll: 'Tous', projNone: 'Aucun', projNew: 'Nouveau projet', projPh: 'Nom du projet', editProj: 'Modifier le projet', noProj: 'Sans projet', stTime: 'Temps passé', stByProj: 'Par projet', stByTask: 'Par tâche', brkLab: 'Pauses', brkOff: 'Aucune', brkN: '{n} min', brkHint: 'Après chaque session terminée. Toutes les 4 sessions, la pause est triple.', brkTitle: 'Pause', brkLong: 'Longue pause', brkOver: 'Pause terminée', brkOverSub: 'Prêt pour la suite ?', brkSkip: 'Passer la pause', brkNext: 'Nouvelle session', brkToast: 'Pause terminée. On reprend ?', obHi: 'Bienvenue sur One-Board', obHiSub: 'Rituels, tâches et focus sur un seul écran. Chaque minute de concentration construit une île. Choisis ta langue pour commencer.', obNext: 'Suivant', obBack: 'Retour', obC: 'Ton pays d’îles', obCSub: 'Chaque île que tu construis sera une ville de ce pays. Tu pourras en changer plus tard.', obR: 'Tes rituels', obRSub: 'Ce que tu veux faire régulièrement. Choisis des idées ou écris les tiens.', obRPh: 'Autre rituel', obSug: ['Sport', 'Lecture', 'Eau, 2 litres', 'Méditation', 'Apprendre une langue', 'Écriture'], obT: 'Une première tâche', obTSub: 'Facultatif. Ajoute ce que tu dois faire aujourd’hui.', obTPh: 'Ex. Réviser le chapitre 3', obTip1: 'Coche tes rituels chaque jour : ton anneau se remplit.', obTip2: 'Lance ▶ sur une tâche : 25 minutes de focus font naître une île.', obTip3: 'Trois jours sans activité et une île s’effondre. Le mode vacances te protège.', obDemo: 'Les exemples seront remplacés par tes choix.', obGo: 'Commencer', obRe: 'Revoir l’accueil', obStep: 'Étape {k} sur {n}', revTitle: 'Bilan de la semaine', revBtn: 'Bilan', revReady: 'Ton bilan de la semaine est prêt.', revView: 'Voir', revFocus: 'Focus', revIsl: 'Îles construites', revActive: 'Jours actifs', revChecks: 'Rituels cochés', revBestDay: 'Meilleur jour', revTopHab: 'Rituel le plus régulier', revTopTask: 'Tâche la plus travaillée', revAch: 'Succès débloqués', revVs: '{p} % vs semaine précédente', revMsgA: 'Belle semaine : tu as tenu un vrai rythme.', revMsgB: 'Bon rythme. Une journée de plus et c’est parfait.', revMsgC: 'Semaine calme. Une petite session par jour suffit pour relancer.', ntLab: 'Rappels', ntOnB: 'Activés', ntDaily: 'Rappel quotidien', ntDanger: 'Île en danger', ntTimer: 'Fin de session et de pause', ntTime: 'Heure du rappel', ntTest: 'Tester une notification', ntWebNote: 'Sur le web, les rappels ne partent que si l’application est ouverte, même en arrière-plan. Pour des rappels application fermée, utilise la version mobile.', ntNA: 'Disponible dans l’application installée, pas dans cet aperçu.', ntDenied: 'Les notifications sont bloquées. Autorise-les dans les réglages du navigateur ou du téléphone.', ntDailyT: 'One-Board', ntDailyB: 'Tes rituels et tes tâches du jour t’attendent.', ntWarnT: 'Ton île est en danger', ntWarnB: 'Sans activité, elle sera détruite dans {t}.', ntSessT: 'Session terminée', ntSessB: 'Bien joué : une île vient de naître.', ntBrkT: 'Pause terminée', ntBrkB: 'On reprend ?', ntTestT: 'One-Board', ntTestB: 'Les rappels fonctionnent.', step: 'Étape {k}/{n}', hourU: 'h', guardOk: 'Ton île est en sécurité. Sans activité, elle sera détruite dans {t}.', guardWarn: 'Attention : ton île sera détruite dans {t}. Lance une session ou coche une tâche.', ruinT: 'Île détruite', ruinB: 'Ton île en construction ({c}) est tombée en ruine après 3 jours sans activité.', ruinC: 'Ta dernière île, {c}, est tombée en ruine après 3 jours sans activité.', ruinBtn: 'Reconstruire', cityLab: 'Ville', pickCity: 'Choisis la ville à construire pour lancer la session.', collTitle: 'Collection', collMeta: '{n}/{t} îles débloquées', collPick: 'Construire cette ville', tabTodo: 'To-do', tabCal: 'Calendrier', tabIsl: 'Îles', styleLab: 'Style', styleStd: 'Standard', diffLab: 'Difficulté', dEasy: 'Facile', dMid: 'Moyen', dHard: 'Difficile', sortLab: 'Tri', sortMan: 'Manuel', sortHard: 'Difficile d’abord', sortEasy: 'Facile d’abord', calToday: 'Aujourd’hui', calPrev: 'Mois précédent', calNext: 'Mois suivant', calHabits: 'Rituels', calNone: 'Aucune tâche ce jour.', calPlan: 'Planifier une tâche', calFocus: 'Focus', calIsles: 'Îles', chgDiff: 'Changer la difficulté', calNoHab: 'Aucun rituel validé.', toastRuin: 'Ton île s’est effondrée après 3 jours sans activité', countryLab: 'Pays des îles', countries: ['France', 'Japon', 'Russie', 'Italie', 'Espagne', 'Royaume-Uni', 'États-Unis'],
       focusOn: 'Lancer le focus : {x}', toastIsland: 'Nouvelle île : {c}', toastLevel: 'Niveau {n} : {t}', toastGoal: 'Objectif du jour atteint', toastDone: 'Session terminée',
       showAll: 'Tout afficher', showLess: 'Réduire', change: 'Changer', fh: '{h} h {m}', fm: '{m} min'
@@ -721,6 +730,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       pause: 'Pause', resume: 'Resume', stop: 'Finish', paused: 'Paused', building: 'Building the island', rem: 'left', elapsed: 'elapsed', nextIsl: 'Next island',
       islTitle: 'Archipelago', isl: { one: '{n} island', other: '{n} islands' },
       pickC: 'Pick a country: every island becomes a city there.', noIsl: 'No islands yet. Start a task with ▶.',
+      syLab: 'Sync', syOffNote: 'Sign in to get your data on all your devices.', syEm: 'Email', syPw: 'Password (6 characters min.)', syIn: 'Sign in', syUp: 'Create account', syGo: 'Continue with Google', syReset: 'Forgot password', syAs: 'Signed in: {e}', syNow: 'Sync now', syOut: 'Sign out', syOk: 'Synced at {d}', syBusy: 'Syncing…', syOff: 'Offline: will retry automatically', syErr: 'Sync error', syWait: 'Signing in…', syResetSent: 'Password reset email sent.', syNeed: 'Enter your email and password.', syBad: 'Wrong email or password.', syTaken: 'An account already exists with this email.', syWeak: 'Password too short (6 characters min.).', syMail: 'Invalid email.', syNet: 'No network connection.', syMany: 'Too many attempts, try again in a few minutes.', syGen: 'Failed: {m}',
       bkLab: 'Backup', bkExport: 'Export', bkImport: 'Import', bkNever: 'No backup yet. Your data only lives in this browser.', bkLast: 'Last backup: {d}', bkDue: 'Time to back up: your archipelago only exists in this browser.', bkOk: 'Backup saved.', bkNo: 'Export cancelled.', bkManual: 'Direct saving is not available here. Copy this text and paste it into a .json file.', bkCopy: 'Copy', bkCopied: 'Copied', bkBad: 'This file is not a valid One-Board backup.', bkAsk: 'Replace your current data with this backup ({h} rituals, {t} tasks, {i} islands, from {d})?', bkReplace: 'Replace', bkCancel: 'Cancel', bkDone: 'Backup imported.', edit: 'Edit', editHabit: 'Edit ritual', editTask: 'Edit task', nameLab: 'Name', dateLab: 'Date', save: 'Save', delBtn: 'Delete', schLab: 'Frequency', schD: 'Every day', schW: 'Specific days', schN: 'Per week', nPer: '{n} / week', weekU: 'wk', undoDel: '“{x}” deleted', undo: 'Undo', restored: 'Island restored.', goalMet: 'Weekly goal reached', restDay: 'Not planned today', ruinRestore: 'Restore', ruinNote: 'One restore allowed per week.', tabStats: 'Stats', stTitle: 'Statistics', stWeekT: 'Week', st12: 'Last 12 weeks', stTasks: 'Time per task', stHab: 'Rituals · 30 days', achTitle: 'Achievements', stTotal: 'Total focus', stWeekNow: 'This week', stWeekTot: 'Total: {t}', stVs: '{p}% vs previous week', stAvg: 'Average: {t} / week', rng7: '7 days', rng30: '30 days', rngAll: 'All', stNone: 'No focus recorded in this period yet. Start a task with ▶.', lvlN: 'level {n}', xpHint: 'Difficulty matters: focus earns ×1, ×1.5 or ×2 XP, and finishing a task gives +5, +10 or +20 XP.', xpBonus: 'Task done: +{n} XP', achToast: 'Achievement: {x} (+25 XP)', vacLab: 'Vacation mode', vacDesc: 'Freezes island decay and protects your streaks for 3, 7 or 14 days. Then 30 days before the next break.', vacN: '{n} days', vacEnd: 'Resume', vacBanner: 'Vacation mode until {d}. Your islands and streaks are protected.', vacLock: 'Next vacation available from {d}.', vacGuard: 'Vacation until {d}: your islands are safe.', vacSub: 'Vacation: nothing to check off today.', a1n: 'First landfall', a1d: 'Build your first island.', a2n: 'Archipelago', a2d: 'Own 10 islands.', a3n: 'Sea empire', a3d: 'Own 25 islands.', a4n: 'Ten hours', a4d: 'Reach 10 h of focus.', a5n: 'Fifty hours', a5d: 'Reach 50 h of focus.', a6n: 'One week', a6d: '7-day focus streak.', a7n: 'Marathon', a7d: '4 h of focus in one day.', a8n: 'Tough one', a8d: 'Finish a hard task.', a9n: 'Heart of stone', a9d: 'Finish 10 hard tasks.', a10n: 'Perfect day', a10d: 'Check off 100% of a day.', a11n: 'Globetrotter', a11d: 'Build islands in 3 countries.', a12n: 'Collector', a12d: 'Unlock all 4 cities of a country.', a13n: 'Rare island', a13d: 'Get a ★ island.', a14n: 'Phoenix', a14d: 'Restore a destroyed island.', a15n: 'Iron ritual', a15d: '14-day streak on a ritual.', late: 'Overdue · {d}', recLab: 'Repeat', recNone: 'Never', recW: 'Every week', recM: 'Every month', recN: 'Every N days', recMt: 'Every month', recNd: 'Every {n} days', projLab: 'Project', projAll: 'All', projNone: 'None', projNew: 'New project', projPh: 'Project name', editProj: 'Edit project', noProj: 'No project', stTime: 'Time spent', stByProj: 'By project', stByTask: 'By task', brkLab: 'Breaks', brkOff: 'None', brkN: '{n} min', brkHint: 'After every completed session. Every 4 sessions the break is three times longer.', brkTitle: 'Break', brkLong: 'Long break', brkOver: 'Break over', brkOverSub: 'Ready for the next one?', brkSkip: 'Skip break', brkNext: 'New session', brkToast: 'Break over. Ready to go again?', obHi: 'Welcome to One-Board', obHiSub: 'Rituals, tasks and focus on a single screen. Every minute of concentration builds an island. Pick your language to start.', obNext: 'Next', obBack: 'Back', obC: 'Your island country', obCSub: 'Every island you build will be a city in this country. You can change it later.', obR: 'Your rituals', obRSub: 'What you want to do regularly. Pick ideas or write your own.', obRPh: 'Another ritual', obSug: ['Sport', 'Reading', 'Water, 2 liters', 'Meditation', 'Learn a language', 'Writing'], obT: 'A first task', obTSub: 'Optional. Add something you need to do today.', obTPh: 'e.g. Review chapter 3', obTip1: 'Check off your rituals every day: your ring fills up.', obTip2: 'Press ▶ on a task: 25 minutes of focus raise an island.', obTip3: 'Three days without activity and an island collapses. Vacation mode protects you.', obDemo: 'The examples will be replaced by your choices.', obGo: 'Get started', obRe: 'Replay the welcome', obStep: 'Step {k} of {n}', revTitle: 'Weekly review', revBtn: 'Review', revReady: 'Your weekly review is ready.', revView: 'View', revFocus: 'Focus', revIsl: 'Islands built', revActive: 'Active days', revChecks: 'Rituals checked', revBestDay: 'Best day', revTopHab: 'Most regular ritual', revTopTask: 'Most worked task', revAch: 'Achievements unlocked', revVs: '{p}% vs previous week', revMsgA: 'Great week: you kept a real rhythm.', revMsgB: 'Good rhythm. One more day and it is perfect.', revMsgC: 'Quiet week. One small session a day is enough to restart.', ntLab: 'Reminders', ntOnB: 'On', ntDaily: 'Daily reminder', ntDanger: 'Island in danger', ntTimer: 'Session and break end', ntTime: 'Reminder time', ntTest: 'Test a notification', ntWebNote: 'On the web, reminders only fire while the app is open, even in the background. For reminders with the app closed, use the mobile version.', ntNA: 'Available in the installed app, not in this preview.', ntDenied: 'Notifications are blocked. Allow them in your browser or phone settings.', ntDailyT: 'One-Board', ntDailyB: 'Your rituals and tasks for today are waiting.', ntWarnT: 'Your island is in danger', ntWarnB: 'With no activity, it will be destroyed in {t}.', ntSessT: 'Session complete', ntSessB: 'Well done: a new island was born.', ntBrkT: 'Break over', ntBrkB: 'Ready to go again?', ntTestT: 'One-Board', ntTestB: 'Reminders work.', step: 'Step {k}/{n}', hourU: 'h', guardOk: 'Your island is safe. With no activity, it will be destroyed in {t}.', guardWarn: 'Warning: your island will be destroyed in {t}. Start a session or check off a task.', ruinT: 'Island destroyed', ruinB: 'Your unfinished island of {c} fell into ruin after 3 days without activity.', ruinC: 'Your latest island, {c}, fell into ruin after 3 days without activity.', ruinBtn: 'Rebuild', cityLab: 'City', pickCity: 'Pick the city to build to start the session.', collTitle: 'Collection', collMeta: '{n}/{t} islands unlocked', collPick: 'Build this city', tabTodo: 'To-do', tabCal: 'Calendar', tabIsl: 'Islands', styleLab: 'Style', styleStd: 'Standard', diffLab: 'Difficulty', dEasy: 'Easy', dMid: 'Medium', dHard: 'Hard', sortLab: 'Sort', sortMan: 'Manual', sortHard: 'Hardest first', sortEasy: 'Easiest first', calToday: 'Today', calPrev: 'Previous month', calNext: 'Next month', calHabits: 'Rituals', calNone: 'No tasks this day.', calPlan: 'Plan a task', calFocus: 'Focus', calIsles: 'Islands', chgDiff: 'Change difficulty', calNoHab: 'No ritual completed.', toastRuin: 'Your island collapsed after 3 days without activity', countryLab: 'Island country', countries: ['France', 'Japan', 'Russia', 'Italy', 'Spain', 'United Kingdom', 'United States'],
       focusOn: 'Start focus: {x}', toastIsland: 'New island: {c}', toastLevel: 'Level {n}: {t}', toastGoal: 'Daily goal reached', toastDone: 'Session complete',
       showAll: 'Show all', showLess: 'Show less', change: 'Change', fh: '{h}h {m}m', fm: '{m}m'
@@ -905,7 +915,13 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
         + P('72,68 88,68 85,34 75,34', '#f4f1ea') + P('73,58 87,58 86,52 74,52', '#d24a3c') + P('72.4,68 87.6,68 87,63 73,63', '#d24a3c')
         + R(74, 28, 12, 6, '#2f3a46') + P('73,28 87,28 80,19', '#d24a3c') + R(78, 29.5, 4, 3, '#ffe27a')
         + R(104, 78, 20, 12, '#e9e3d6') + P('102,78 114,68 126,78', '#59606b') + R(111, 82, 5, 8, '#7a4a2e', 1)
-        + Pa('M30 98 q6 -4 12 0 t12 0 t12 0', '', '#7fc3e8', 1.4); } }
+        + Pa('M30 98 q6 -4 12 0 t12 0 t12 0', '', '#7fc3e8', 1.4); } },
+      { n: 'Montpellier', p: 'stone', f: function () {
+        var s = Ci(124, 22, 8, '#ffd35c') + R(20, 58, 120, 32, '#e3d3ae') + R(18, 44, 124, 4, '#d3c29a') + R(20, 48, 120, 10, '#e8dab8');
+        var i, x;
+        for (i = 0; i < 6; i++) { x = 26 + i * 18; s += Pa('M' + x + ' 90 V74 Q' + (x + 7) + ' 60 ' + (x + 14) + ' 74 V90Z', '#a9cfe6'); }
+        for (i = 0; i < 12; i++) { x = 23 + i * 9.6; s += Pa('M' + q(x) + ' 58 V54 Q' + q(x + 3.4) + ' 48.5 ' + q(x + 6.8) + ' 54 V58Z', '#a9cfe6'); }
+        return s + R(20, 58, 120, 2, '#c9b78c') + cyp(12, 92, 1.2) + cyp(148, 92, 1.1) + flowers(80, 94, 1); } }
     ],
     /* Japon */
     [
@@ -964,7 +980,15 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
         return s + R(70, 46, 20, 32, '#b24a35') + P('66,46 94,46 80,26', '#3f7a5a') + R(76, 54, 8, 12, '#2e2a2a', 4)
           + R(40, 60, 12, 18, '#b24a35') + P('38,60 54,60 46,46', '#3f7a5a') + R(108, 60, 12, 18, '#b24a35') + P('106,60 122,60 114,46', '#3f7a5a')
           + Pa('M80 26 V20', '', '#d63a2f', 1) + star(80, 17, 5, '#d63a2f') + Pa('M46 46 V40 M114 46 V40', '', '#d9b13a', 1)
-          + Pa('M73 90 V84 Q80 76 87 84 V90Z', '#2a2326'); } }
+          + Pa('M73 90 V84 Q80 76 87 84 V90Z', '#2a2326'); } },
+      { n: 'Ufa', p: 'grass', f: function () { return ''
+        + Ci(130, 22, 8, '#ffd35c') + R(18, 84, 124, 10, '#6fb5d9') + Pa('M28 89 q6 -3 12 0 t12 0 M100 91 q6 -3 12 0 t12 0', '', '#a9dcf0', 1.2)
+        + P('42,90 50,64 68,54 100,54 118,64 126,90', '#9a8f7f') + Pa('M52 66 H112 M46 76 H122', '', '#7d7364', 1)
+        + R(70, 34, 20, 20, '#cfc8b8') + R(68, 31, 24, 4, '#b5ad9c')
+        + Pa('M72 30 L70 24 L76 18 L90 18 L96 24 L94 30 Z', '#8a6a45') + P('90,20 98,12 102,15 94,24', '#8a6a45')
+        + Pa('M74 30 L72 34 M80 30 L80 34 M88 30 L90 34', '', '#8a6a45', 1.4)
+        + R(79, 8, 3.6, 9, '#c0392b') + Ci(80.8, 6, 2.3, '#e8c9a0') + Pa('M83 10 L90 3', '', '#c0392b', 1.2) + Pa('M90 3 L93 -3', '', '#e5e7ea', 1)
+        + pine(30, 92, 1.1, '#2f6b4a') + pine(136, 92, 1.2, '#2f6b4a') + flowers(80, 96, 0.9); } }
     ],
     /* Italie */
     [
@@ -1104,7 +1128,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   }
   function sparkle(x, y) { return star(x, y, 4, '#ffd35c'); }
   function islandInner(c, i, seed, rare) {
-    var ci = Math.max(0, CIDS.indexOf(c)), sc = SCENES[ci][i % 4], r = mul(seed), o = '';
+    var ci = Math.max(0, CIDS.indexOf(c)), sc = SCENES[ci][i % SCENES[ci].length], r = mul(seed), o = '';
     if (rare) o += grp(0.16, Ci(80, 76, 62, '#ffd35c'));
     o += clouds(r) + base(PAL[sc.p]) + sc.f(r) + extras(r, sc.p);
     if (rare) o += sparkle(24, 40) + sparkle(138, 54) + sparkle(112, 14);
@@ -1113,7 +1137,8 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   function islandSVG(c, i, seed, rare, label) {
     return '<svg viewBox="0 0 160 152" role="img" aria-label="' + esc(label) + '">' + islandInner(c, i, seed, rare) + '</svg>';
   }
-  function cityName(c, i) { return SCENES[Math.max(0, CIDS.indexOf(c))][i % 4].n; }
+  function nCity(c) { return SCENES[Math.max(0, CIDS.indexOf(c))].length; }
+  function cityName(c, i) { var A = SCENES[Math.max(0, CIDS.indexOf(c))]; return A[i % A.length].n; }
 
   /* Construction visible : l'île est découpée en pièces qui montent l'une après l'autre */
   var LIVE = { N: 1 };
@@ -1142,7 +1167,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     return out;
   }
   function islandPieces(c, i, seed, rare) {
-    var ci = Math.max(0, CIDS.indexOf(c)), sc = SCENES[ci][i % 4], r = mul(seed);
+    var ci = Math.max(0, CIDS.indexOf(c)), sc = SCENES[ci][i % SCENES[ci].length], r = mul(seed);
     var sky = (rare ? grp(0.16, Ci(80, 76, 62, '#ffd35c')) : '') + clouds(r);
     var ground = splitEls(base(PAL[sc.p])), scene = chunk(splitEls(sc.f(r))), ex = chunk(splitEls(extras(r, sc.p)));
     var pcs = capPieces(scene.concat(ex), 22);
@@ -1180,7 +1205,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       if (raw.bg === 'dark' || raw.bg === 'light') ST.bg = raw.bg;
       if (I18N[raw.lang]) ST.lang = raw.lang;
       if (CIDS.indexOf(raw.country) >= 0) ST.country = raw.country;
-      if (raw.city >= 0 && raw.city <= 3) ST.city = raw.city | 0;
+      if (raw.city >= 0 && raw.city <= 9) ST.city = raw.city | 0;
       if (DURS.indexOf(raw.dur) >= 0) ST.dur = raw.dur;
       if (raw.sort === 'hard' || raw.sort === 'easy') ST.sort = raw.sort;
       ST.glass = raw.glass === true;
@@ -1490,6 +1515,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   function persistAll() {
     try { stampAll(); } catch (e) {}
     try { ntSync(); } catch (e) {}
+    try { syMark(); } catch (e) {}
     try {
       localStorage.setItem(KEY, JSON.stringify(S));
       localStorage.setItem(FKEY, JSON.stringify(F));
@@ -1983,17 +2009,17 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   }
 
   function renderColl() {
-    var seen = {}, total = CIDS.length * 4, got = 0, html = '';
+    var seen = {}, total = CIDS.reduce(function (a, c) { return a + nCity(c); }, 0), got = 0, html = '';
     F.islands.forEach(function (x) { var k = x.c + x.i; seen[k] = (seen[k] || 0) + 1; });
     CIDS.forEach(function (c, ci) {
       var tiles = '', have = 0;
-      for (var i = 0; i < 4; i++) {
+      for (var i = 0, nc = nCity(c); i < nc; i++) {
         var n = seen[c + i] || 0, nm = cityName(c, i), cur = ST.country === c && ST.city === i;
         if (n) { have++; got++; }
         tiles += '<button class="ctile' + (n ? '' : ' locked') + (cur ? ' cur' : '') + '" type="button" data-act="city" data-c="' + c + '" data-id="' + i + '" aria-pressed="' + cur + '" title="' + esc(T('collPick')) + '">'
           + islandSVG(c, i, 11 + ci * 7 + i * 3, false, nm) + '<span>' + esc(nm) + (n ? ' · ×' + n : '') + '</span></button>';
       }
-      html += '<div class="crow"><p class="lab">' + esc(L().countries[ci]) + ' · ' + have + '/4</p><div class="cgrid">' + tiles + '</div></div>';
+      html += '<div class="crow"><p class="lab">' + esc(L().countries[ci]) + ' · ' + have + '/' + nc + '</p><div class="cgrid">' + tiles + '</div></div>';
     });
     $('#coll').innerHTML = html;
     $('#cmeta').textContent = T('collMeta', { n: got, t: total });
@@ -2037,6 +2063,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   }
 
   function renderSettings(act, id) {
+    try { renderSync(); } catch (e) {}
     $('#swatches').innerHTML = COLORS.map(function (c, i) {
       var name = L().colors[i], hex = ST.bg === 'dark' ? c.dark : c.light;
       var lk = c.lvl && lvlOf(xp()) < c.lvl;
@@ -2055,7 +2082,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     $('#citySec').hidden = !ST.country;
     $('#cityHint').hidden = !ui.pending;
     if (ST.country) {
-      $('#cities').innerHTML = [0, 1, 2, 3].map(function (i) {
+      $('#cities').innerHTML = Array.apply(null, Array(nCity(ST.country))).map(function (_, i) {
         var nm = cityName(ST.country, i), k = F.islands.filter(function (x) { return x.c === ST.country && x.i === i; }).length;
         return '<button class="citybtn" type="button" data-act="city" data-id="' + i + '" aria-pressed="' + (ST.city === i) + '">' + islandSVG(ST.country, i, 11 + i * 3, false, nm) + '<span>' + esc(nm) + (k ? ' · ×' + k : '') + '</span></button>';
       }).join('');
@@ -2466,6 +2493,196 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     applySettings(); applyStatic(); renderSettings(); render(); renderBackup();
     bkShow(esc(T('bkDone')));
   }
+
+  /* ---------- Synchronisation entre appareils ----------
+     Le moteur est indépendant du service : il parle à window.OB_SYNC (voir fb.js), qui offre
+     onAuth, signIn, signUp, google, reset, signOut, transact(fn) et listen(cb).
+     Chaque élément porte une date de modification (u) : le plus récent gagne, une suppression
+     (S.del) l'emporte sur une version plus ancienne. Les compteurs prennent le maximum. */
+  var SY = { be: null, user: null, st: 'out', last: 0, err: '', msg: '', busy: false, again: 0, timer: 0, unsub: null, applying: false };
+  function canon(v) {
+    if (v === null || typeof v !== 'object') return JSON.stringify(v);
+    if (Array.isArray(v)) return '[' + v.map(function (x) { return x === undefined ? 'null' : canon(x); }).join(',') + ']';
+    return '{' + Object.keys(v).sort().filter(function (k) { return v[k] !== undefined; }).map(function (k) { return JSON.stringify(k) + ':' + canon(v[k]); }).join(',') + '}';
+  }
+  function syKey(m) {
+    if (!m) return '';
+    var c = JSON.parse(JSON.stringify(m)), byId = function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; };
+    ['habits', 'tasks', 'projects'].forEach(function (k) { c.S[k].sort(byId); });
+    c.F.islands.sort(byId);
+    return canon(c);
+  }
+  var SYF = ['islands', 'bank', 'total', 'day', 'seed', 'lastAt', 'lost', 'ruin', 'bt', 'bp', 'pn', 'xpx', 'hd', 'ach', 'pauses', 'restoredAt'];
+  function syPack() {
+    var f = {}; SYF.forEach(function (k) { if (F[k] !== undefined) f[k] = F[k]; });
+    return JSON.parse(JSON.stringify({ v: 1, S: { habits: S.habits, tasks: S.tasks, projects: S.projects || [], log: S.log, scores: S.scores, del: S.del || {}, lu: S.lu || {} }, F: f }));
+  }
+  function syEmpty() { return { v: 1, S: { habits: [], tasks: [], projects: [], log: {}, scores: {}, del: {}, lu: {} }, F: {} }; }
+  function syMaxMap(a, b) { var o = {}; [a, b].forEach(function (m) { Object.keys(m || {}).forEach(function (k) { o[k] = Math.max(o[k] || 0, +m[k] || 0); }); }); return o; }
+  function syMaxNest(a, b) { var o = {}; [a, b].forEach(function (m) { Object.keys(m || {}).forEach(function (k) { o[k] = syMaxMap(o[k], m[k]); }); }); return o; }
+  function syItems(a, b, pre, del) {
+    var map = {}, order = [];
+    [a || [], b || []].forEach(function (arr) {
+      arr.forEach(function (o) {
+        if (!o || o.id == null) return;
+        var c = map[o.id];
+        if (!c) { map[o.id] = o; order.push(o.id); }
+        else if ((o.u || 0) > (c.u || 0) || ((o.u || 0) === (c.u || 0) && canon(o) < canon(c))) map[o.id] = o;
+      });
+    });
+    var out = [];
+    order.forEach(function (id) {
+      var o = map[id];
+      if ((del[pre + id] || 0) > (o.u || 0)) return;
+      delete del[pre + id]; out.push(o);
+    });
+    return out;
+  }
+  function syDays(la, lb, ua, ub, pre, del, lu) {
+    var out = {}, keys = {}; la = la || {}; lb = lb || {};
+    Object.keys(la).concat(Object.keys(lb)).forEach(function (k) { keys[k] = 1; });
+    Object.keys(keys).forEach(function (k) {
+      var ha = k in la, hb = k in lb, ta = ha ? (ua[pre + k] || 0) : -1, tb = hb ? (ub[pre + k] || 0) : -1, v, t;
+      if (ha && hb) { if (ta > tb || (ta === tb && canon(la[k]) <= canon(lb[k]))) { v = la[k]; t = ta; } else { v = lb[k]; t = tb; } }
+      else if (ha) { v = la[k]; t = ta; } else { v = lb[k]; t = tb; }
+      if ((del[pre + k] || 0) > t) return;
+      delete del[pre + k]; out[k] = v; lu[pre + k] = t;
+    });
+    return out;
+  }
+  function syMerge(A, B) {
+    if (!A && !B) return null;
+    A = A || syEmpty(); B = B || syEmpty();
+    var del = {}, now = Date.now(), lu = {}, m = { v: 1, S: {}, F: {} };
+    [A.S.del, B.S.del].forEach(function (d) { Object.keys(d || {}).forEach(function (k) { del[k] = Math.max(del[k] || 0, d[k]); }); });
+    m.S.habits = syItems(A.S.habits, B.S.habits, 'h:', del);
+    m.S.tasks = syItems(A.S.tasks, B.S.tasks, 't:', del);
+    m.S.projects = syItems(A.S.projects, B.S.projects, 'p:', del);
+    m.S.log = syDays(A.S.log, B.S.log, A.S.lu || {}, B.S.lu || {}, 'l:', del, lu);
+    m.S.scores = syDays(A.S.scores, B.S.scores, A.S.lu || {}, B.S.lu || {}, 's:', del, lu);
+    Object.keys(del).forEach(function (k) { if (now - del[k] > TOMB_MS) delete del[k]; });
+    m.S.del = del; m.S.lu = lu;
+    var a = A.F, b = B.F, f = m.F;
+    f.islands = syItems(a.islands, b.islands, 'i:', del);
+    /* les îles ressuscitées ou détruites ont pu modifier del : on le reporte */
+    m.S.del = del;
+    f.total = Math.max(a.total || 0, b.total || 0); f.xpx = Math.max(a.xpx || 0, b.xpx || 0); f.hd = Math.max(a.hd || 0, b.hd || 0);
+    f.lastAt = Math.max(a.lastAt || 0, b.lastAt || 0);
+    f.day = syMaxMap(a.day, b.day); f.bp = syMaxMap(a.bp, b.bp); f.bt = syMaxNest(a.bt, b.bt);
+    f.pn = {}; [b.pn, a.pn].forEach(function (x) { Object.keys(x || {}).forEach(function (k) { f.pn[k] = x[k]; }); });
+    f.ach = {}; [a.ach, b.ach].forEach(function (x) { Object.keys(x || {}).forEach(function (k) { f.ach[k] = f.ach[k] ? Math.min(f.ach[k], x[k]) : x[k]; }); });
+    var seen = {}; f.pauses = [];
+    (a.pauses || []).concat(b.pauses || []).forEach(function (r) { var k = r.a + '|' + r.b; if (!seen[k]) { seen[k] = 1; f.pauses.push({ a: r.a, b: r.b }); } });
+    f.pauses.sort(function (x, y) { return x.a < y.a ? -1 : x.a > y.a ? 1 : x.b < y.b ? -1 : x.b > y.b ? 1 : 0; });
+    var ev = function (x) { return Math.max(x.restoredAt || 0, (x.ruin && x.ruin.at) || 0); };
+    var rs = ev(a) > ev(b) || (ev(a) === ev(b) && canon(a.ruin || null) <= canon(b.ruin || null)) ? a : b;
+    f.lost = rs.lost || 0; f.ruin = rs.ruin || null; f.restoredAt = rs.restoredAt || 0;
+    var bs = (a.lastAt || 0) > (b.lastAt || 0) || ((a.lastAt || 0) === (b.lastAt || 0) && (a.bank || 0) >= (b.bank || 0)) ? a : b;
+    f.bank = bs.bank || 0; f.seed = bs.seed || a.seed || b.seed || 1;
+    return m;
+  }
+  function syApply(m) {
+    SY.applying = true;
+    try {
+      var ids = {}; m.S.habits.forEach(function (h) { ids[h.id] = 1; });
+      S = { demo: false, v: DATA_V, habits: m.S.habits, projects: m.S.projects, log: m.S.log, scores: m.S.scores, del: m.S.del, lu: m.S.lu,
+        tasks: m.S.tasks.filter(function (t) { return t.habitId ? (t.date === today && ids[t.habitId]) : true; }).map(function (t) { carry(t); if (!(t.diff >= 1 && t.diff <= 3)) t.diff = 2; return t; }) };
+      Object.keys(m.F).forEach(function (k) { F[k] = m.F[k]; });
+      F.seed = F.seed || newSeed(); fixF(F);
+      if (!ST.onb) ST.onb = 1;
+      SIG = null; persistAll(); saveST();
+      render(); renderSettings(); renderBackup();
+    } finally { SY.applying = false; }
+  }
+  function syBusyNow() { return !!SES || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || ''); }
+  function syRun() {
+    if (!SY.be || !SY.user) return;
+    if (SY.busy) { SY.again = 1; return; }
+    if (SY.timer) { clearTimeout(SY.timer); SY.timer = 0; }
+    SY.busy = true; SY.st = 'busy'; renderSync();
+    var res = null;
+    SY.be.transact(function (rs) {
+      var remote = rs ? JSON.parse(rs) : null, local = S.demo ? null : syPack();
+      var m = syMerge(local, remote); res = m;
+      if (!m || (rs && syKey(remote) === syKey(m))) return null;
+      return canon(m);
+    }).then(function () {
+      SY.busy = false; SY.st = 'ok'; SY.err = ''; SY.last = Date.now();
+      if (res) {
+        if (syBusyNow()) { setTimeout(syRun, 5000); }
+        else { var dm = S.demo, m2 = syMerge(dm ? null : syPack(), res); if (dm || syKey(m2) !== syKey(syPack())) syApply(m2); }
+      }
+      renderSync();
+      if (SY.again) { SY.again = 0; syMark(); }
+    }).catch(function (e) {
+      SY.busy = false; SY.st = navigator.onLine === false ? 'off' : 'err'; SY.err = (e && (e.code || e.message)) || ''; renderSync();
+      if (SY.st === 'off' || /unavailable|network|deadline/i.test(SY.err)) SY.timer = setTimeout(function () { SY.timer = 0; syRun(); }, 20000);
+    });
+  }
+  function syMark() {
+    if (SY.applying || !SY.be || !SY.user || SY.timer) return;
+    SY.timer = setTimeout(function () { SY.timer = 0; syRun(); }, SES ? 60000 : 3000);
+  }
+  function syAuth(u) {
+    SY.user = u || null; SY.msg = '';
+    if (SY.unsub) { try { SY.unsub(); } catch (e) {} SY.unsub = null; }
+    if (!u) { SY.st = 'out'; renderSync(); return; }
+    SY.st = 'busy'; renderSync();
+    syRun();
+    SY.unsub = SY.be.listen(function () { if (!SY.busy) syRun(); else SY.again = 1; });
+  }
+  function syErr(e) {
+    var c = (e && e.code) || '';
+    if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) return T('syBad');
+    if (/email-already/.test(c)) return T('syTaken');
+    if (/weak-password/.test(c)) return T('syWeak');
+    if (/invalid-email/.test(c)) return T('syMail');
+    if (/network/.test(c)) return T('syNet');
+    if (/too-many/.test(c)) return T('syMany');
+    if (/popup-closed|cancelled-popup/.test(c)) return '';
+    return T('syGen', { m: c || (e && e.message) || '?' });
+  }
+  function syDo(kind) {
+    if (!SY.be) return;
+    var em = $('#syEm') ? $('#syEm').value.trim() : '', pw = $('#syPw') ? $('#syPw').value : '', pr;
+    if ((kind === 'in' || kind === 'up') && (!em || !pw)) { SY.msg = T('syNeed'); renderSync(); return; }
+    if (kind === 'reset' && !em) { SY.msg = T('syNeed'); renderSync(); return; }
+    SY.msg = ''; SY.st = 'wait'; renderSync();
+    pr = kind === 'in' ? SY.be.signIn(em, pw) : kind === 'up' ? SY.be.signUp(em, pw) : kind === 'go' ? SY.be.google() : SY.be.reset(em).then(function () { SY.msg = T('syResetSent'); });
+    Promise.resolve(pr).catch(function (e) { SY.msg = syErr(e); }).then(function () { if (!SY.user) SY.st = 'out'; renderSync(); });
+  }
+  function renderSync() {
+    var el = $('#sySec'); if (!el) return;
+    if (!SY.be) { el.hidden = true; return; }
+    el.hidden = false;
+    var oe = $('#syEm') ? $('#syEm').value : '', op = $('#syPw') ? $('#syPw').value : '', h = '<p class="lab">' + esc(T('syLab')) + '</p>';
+    if (SY.user) {
+      var line = SY.st === 'busy' ? T('syBusy') : SY.st === 'off' ? T('syOff') : SY.st === 'err' ? T('syErr') + (SY.err ? ' (' + SY.err + ')' : '') : T('syOk', { d: SY.last ? new Date(SY.last).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '…' });
+      h += '<p class="bkinfo">' + esc(T('syAs', { e: SY.user.email || '' })) + '<br>' + esc(line) + '</p>'
+        + '<div class="bkrow"><button class="btn alt" type="button" data-act="synow">' + esc(T('syNow')) + '</button><button class="btn alt" type="button" data-act="syout">' + esc(T('syOut')) + '</button></div>';
+    } else {
+      var wait = SY.st === 'wait';
+      h += '<p class="bkinfo">' + esc(T('syOffNote')) + '</p>'
+        + '<div class="sycol"><input class="field" id="syEm" type="email" autocomplete="email" autocapitalize="off" placeholder="' + esc(T('syEm')) + '">'
+        + '<input class="field" id="syPw" type="password" autocomplete="current-password" placeholder="' + esc(T('syPw')) + '"></div>'
+        + '<div class="bkrow"><button class="btn" type="button" data-act="syin"' + (wait ? ' disabled' : '') + '>' + esc(wait ? T('syWait') : T('syIn')) + '</button><button class="btn alt" type="button" data-act="syup"' + (wait ? ' disabled' : '') + '>' + esc(T('syUp')) + '</button></div>'
+        + '<div class="bkrow">' + (SY.be.google ? '<button class="btn alt" type="button" data-act="sygo"' + (wait ? ' disabled' : '') + '>' + esc(T('syGo')) + '</button>' : '') + '<button class="btn alt" type="button" data-act="syreset">' + esc(T('syReset')) + '</button></div>';
+    }
+    if (SY.msg) h += '<div class="bkmsg" role="status">' + esc(SY.msg) + '</div>';
+    el.innerHTML = h;
+    if (oe && $('#syEm')) $('#syEm').value = oe; if (op && $('#syPw')) $('#syPw').value = op;
+  }
+  function syInit() {
+    if (window.OB_TEST) window.__OB = { merge: syMerge, pack: syPack, key: syKey, SY: SY, run: syRun, S: function () { return S; }, F: function () { return F; } };
+    SY.be = window.OB_SYNC || null;
+    if (!SY.be) return;
+    renderSync();
+    document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && e.target.id === 'syPw') syDo('in'); });
+    window.addEventListener('online', function () { syRun(); });
+    document.addEventListener('visibilitychange', function () { if (SY.user) syRun(); });
+    SY.be.onAuth(syAuth);
+  }
+
   function importFile(file) {
     var rd = new FileReader();
     rd.onload = function () {
@@ -2688,6 +2905,9 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     if (act === 'schn') { ED.sch.n = Math.max(1, Math.min(6, ED.sch.n + (+id))); renderEditSub(); return; }
     if (act === 'undo') { var uf = undoFn; hideUndo(); if (uf) { uf(); afterToggle(); render(); } return; }
     if (act === 'ruinrestore') { restoreRuin(); return; }
+    if (act === 'syin' || act === 'syup' || act === 'sygo' || act === 'syreset') { syDo(act.slice(2)); return; }
+    if (act === 'synow') { syRun(); return; }
+    if (act === 'syout') { if (SY.be) SY.be.signOut(); return; }
     if (act === 'bkexport') { exportBackup(); return; }
     if (act === 'bkimport') { $('#bkFile').click(); return; }
     if (act === 'bkcancel') { bkPending = null; bkShow(''); return; }
@@ -2837,6 +3057,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   if (fell) persistAll();
   render();
   if (fell) toast(T('toastRuin'));
+  syInit();
   if (!ST.onb && (FRESH || S.demo)) welcomeOpen();
   tick();
   setInterval(tick, 1000);

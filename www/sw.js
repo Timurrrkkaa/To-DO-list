@@ -1,6 +1,6 @@
 /* One-Board : service worker. Cache de l'application pour un usage hors ligne + clic sur les notifications. */
-var CACHE = 'one-board-v1';
-var SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png', './icons/favicon-32.png'];
+var CACHE = 'one-board-v2';
+var SHELL = ['./', './index.html', './manifest.webmanifest', './fb.js', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png', './icons/favicon-32.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
@@ -15,7 +15,8 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   var fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-  if (url.origin !== location.origin && !fonts) return;
+  var fbsdk = url.hostname === 'www.gstatic.com' && url.pathname.indexOf('/firebasejs/') === 0;
+  if (url.origin !== location.origin && !fonts && !fbsdk) return;
   /* Les pages : réseau d'abord (mises à jour), cache en secours. Le reste : cache d'abord, rafraîchi en arrière-plan. */
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then(function (r) {

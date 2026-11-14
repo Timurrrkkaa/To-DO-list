@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Chaque compte ne lit et n'écrit que son propre document.
+    match /users/{uid}/data/main {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['d', 't', 'v'])
+        && request.resource.data.d is string
+        && request.resource.data.d.size() < 900000;
+      allow delete: if false;
+    }
+    // Tout le reste est fermé.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

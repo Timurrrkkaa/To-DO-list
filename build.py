@@ -3,13 +3,17 @@
 Usage : python3 build.py
 Ajoute ce qu'il faut pour une vraie application : document HTML complet, manifeste, icônes,
 couleur de thème, enregistrement du service worker."""
-import re, pathlib
+import re, pathlib, json
 root = pathlib.Path(__file__).resolve().parent
 src = (root / 'src' / 'one-board.html').read_text(encoding='utf-8')
 m = re.search(r'<title>(.*?)</title>', src, re.S)
 title = m.group(1).strip() if m else 'One-Board'
 body = re.sub(r'<title>.*?</title>\s*', '', src, count=1, flags=re.S)
 body = re.sub(r'<meta name="claude:viewport-fit-sides"[^>]*>\s*', '', body)
+cfgp = root / 'firebase-config.json'
+fb = ''
+if cfgp.exists():
+    fb = '<script>window.OB_FIREBASE=' + json.dumps(json.loads(cfgp.read_text(encoding='utf-8'))) + ';</script>\n<script src="fb.js"></script>\n'
 head = f'''<!doctype html>
 <html lang="fr">
 <head>
@@ -31,7 +35,7 @@ html{{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:1
 body{{margin:0}}
 img{{max-width:100%}}
 </style>
-</head>
+{fb}</head>
 <body>
 '''
 tail = '''
