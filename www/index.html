@@ -235,7 +235,11 @@ button:disabled { cursor: default; }
 .settabs button[aria-selected="true"] .tdot { background: var(--accent-ink); }
 .sydel { margin-top: 10px; }
 .btn.dng { color: #e5604f; border-color: color-mix(in srgb, #e5604f 45%, var(--line)); }
+.barbtns { display: flex; gap: 8px; }
 .searchbar { position: relative; margin: 0 0 14px; }
+.searchbar[hidden] { display: none; }
+.searchbar input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+#sbtn[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
 .searchbar .field { width: 100%; padding-right: 96px; }
 .searchbar .meta { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 .row .subs { flex-basis: 100%; padding: 0 0 2px 44px; display: flex; flex-direction: column; gap: 8px; }
@@ -529,9 +533,10 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
 <main class="wrap">
   <div class="bar">
     <span class="brand">One-Board</span>
+    <span class="barbtns"><button class="iconbtn" id="sbtn" data-act="search" type="button" aria-controls="searchBar" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
     <button class="iconbtn" id="gear" data-act="open" type="button" aria-haspopup="dialog">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-    </button>
+    </button></span>
   </div>
 
   <div class="tabpanel" id="tab-todo" role="tabpanel" aria-labelledby="tabbtn-todo">
@@ -553,7 +558,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   <div class="vacban" id="vacBan" hidden></div>
   <div class="vacban" id="revBan" hidden></div>
 
-  <div class="searchbar" id="searchBar">
+  <div class="searchbar" id="searchBar" hidden>
     <input class="field" id="q" type="search" data-i18n-ph="sPh" aria-label="Search" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60">
     <span class="meta" id="qcount" aria-live="polite"></span>
   </div>
@@ -1327,6 +1332,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     });
     $('#gear').setAttribute('aria-label', T('settings'));
     $('#gear').setAttribute('title', T('settings'));
+    $('#sbtn').setAttribute('aria-label', T('sPh')); $('#sbtn').setAttribute('title', T('sPh'));
     $('#sheetClose').setAttribute('aria-label', T('close'));
     $('#modalClose').setAttribute('aria-label', T('close'));
     $('#heat').setAttribute('aria-label', T('heatAria'));
@@ -3126,6 +3132,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       if (pend) startFocus(pend);
       return;
     }
+    if (act === 'search') { openSearch(!ui.sopen); return; }
     if (act === 'tab') { if (id !== ui.tab) { setTab(id); window.scrollTo({ top: 0, behavior: rmq.matches ? 'auto' : 'smooth' }); } return; }
     if (act === 'calprev' || act === 'calnext') {
       var mm = ui.cal.m + (act === 'calnext' ? 1 : -1), dd = new Date(ui.cal.y, mm, 1);
@@ -3289,6 +3296,10 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     if (f.id === 'calForm' && $('#calInput')) $('#calInput').focus();
   });
 
+  function openSearch(on) {
+    ui.sopen = on; $('#searchBar').hidden = !on || ui.tab !== 'todo'; $('#sbtn').setAttribute('aria-expanded', String(!!on));
+    if (on) { if (ui.tab !== 'todo') { setTab('todo'); $('#searchBar').hidden = false; } $('#q').focus(); } else setQ('');
+  }
   function setQ(v) {
     ui.q = (v || '').trim().toLowerCase();
     $('#q').value = v || ''; renderHabits(stats()); renderTasks();
@@ -3337,7 +3348,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     var sheet = $('#sheet');
     if (e.target && e.target.classList && e.target.classList.contains('grip') && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); moveTask(e.target.dataset.grip, e.key === 'ArrowUp' ? -1 : 1); return; }
     if (e.target && e.target.id === 'editSubIn' && e.key === 'Enter') { e.preventDefault(); editSubAdd(); return; }
-    if (e.target && e.target.id === 'q' && e.key === 'Escape') { setQ(''); return; }
+    if (e.target && e.target.id === 'q' && e.key === 'Escape') { openSearch(false); $('#sbtn').focus(); return; }
     if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && e.target.getAttribute && e.target.getAttribute('role') === 'tab') {
       var ni = (TABS.indexOf(ui.tab) + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
       setTab(TABS[ni]); $('#tabbtn-' + TABS[ni]).focus(); return;
