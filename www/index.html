@@ -2471,6 +2471,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       return '<div class="bcol' + (o.cur ? ' cur' : '') + '" role="img" aria-label="' + esc(o.aria) + '"><u>' + esc(o.top || '') + '</u><div class="bwrap"><i style="height:' + Math.max(1, Math.round(o.v / mx * 100)) + '%"></i></div><em>' + esc(o.lab || '') + '</em></div>';
     }).join('') + '</div>';
   }
+  function cmpT(sec) { return sec < 3600 ? Math.max(1, Math.round(sec / 60)) + '\u2032' : (Math.round(sec / 360) / 10).toLocaleString(L().loc) + T('hourU'); }
   function hrs(sec) { return (Math.round(sec / 360) / 10).toLocaleString(L().loc) + ' ' + T('hourU'); }
   function habRate(h) {
     var first = null;
@@ -2494,7 +2495,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     var items = [], tot = wkSum(ws);
     for (i = 0; i < 7; i++) {
       var dd = addDays(ws, i), k = dkey(dd), v = F.day[k] || 0;
-      items.push({ v: v, cur: k === today, top: v ? fmt(v) : '', lab: dd.toLocaleDateString(loc, { weekday: 'narrow' }), aria: dd.toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long' }) + ' : ' + fmt(v) });
+      items.push({ v: v, cur: k === today, top: v ? cmpT(v) : '', lab: dd.toLocaleDateString(loc, { weekday: 'narrow' }), aria: dd.toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long' }) + ' : ' + fmt(v) });
     }
     $('#stWeek').innerHTML = bars(items);
     $('#stWeekMeta').textContent = ws.toLocaleDateString(loc, { day: 'numeric', month: 'short' }) + ' – ' + addDays(ws, 6).toLocaleDateString(loc, { day: 'numeric', month: 'short' });
@@ -2654,7 +2655,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     function row(l, v) { return '<div class="trow"><span class="nm">' + esc(l) + '</span><span class="tv">' + esc(v) + '</span></div>'; }
     var items = d.days.map(function (v, k) {
       var dd = addDays(ws, k);
-      return { v: v, cur: dkey(dd) === d.best, top: v ? fmt(v) : '', lab: dd.toLocaleDateString(loc, { weekday: 'narrow' }), aria: dd.toLocaleDateString(loc, { weekday: 'long' }) + ' : ' + fmt(v) };
+      return { v: v, cur: dkey(dd) === d.best, top: v ? cmpT(v) : '', lab: dd.toLocaleDateString(loc, { weekday: 'narrow' }), aria: dd.toLocaleDateString(loc, { weekday: 'long' }) + ' : ' + fmt(v) };
     });
     var th = topOf(d.hab), hb = th ? S.habits.filter(function (x) { return x.id === th; })[0] : null, tt = topOf(d.tasks);
     var msg = d.active >= 5 ? 'revMsgA' : d.active >= 3 ? 'revMsgB' : 'revMsgC';
