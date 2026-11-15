@@ -1560,7 +1560,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   }
   /* Préparation à la synchro : chaque élément porte un id et une date de modification (u),
      les suppressions laissent une trace (S.del), l'appareil a un identifiant (ST.dev). */
-  var SIG = null, DATA_V = 2, TOMB_MS = 90 * 864e5;
+  var SIG = null, LEG = false, DATA_V = 2, TOMB_MS = 90 * 864e5;
   function stampAll() {
     var now = Date.now(), first = !SIG, seen = {};
     if (first) SIG = {};
@@ -1569,7 +1569,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     function chk(key, val, obj, lk) {
       seen[key] = 1;
       var sg = sig(val), has = obj ? obj.u > 0 : S.lu[lk] > 0;
-      if (!has || (!first && SIG[key] !== sg)) { if (obj) obj.u = now; else S.lu[lk] = now; }
+      if (!has || (!first && SIG[key] !== sg)) { var sv = (!has && LEG) ? 1 : now; if (obj) obj.u = sv; else S.lu[lk] = sv; }
       SIG[key] = sg;
       delete S.del[key];
     }
@@ -1579,6 +1579,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     S.projects = S.projects || [];
     S.projects.forEach(function (o) { chk('p:' + o.id, o, o); });
     Object.keys(S.log).forEach(function (d) { chk('l:' + d, S.log[d], null, 'l:' + d); });
+    Object.keys(S.log).forEach(function (d) { (S.log[d] || []).forEach(function (id) { var ck = 'c:' + d + ':' + id; chk(ck, 1, null, ck); }); });
     Object.keys(S.scores).forEach(function (d) { chk('s:' + d, S.scores[d], null, 's:' + d); });
     Object.keys(SIG).forEach(function (k) {
       if (seen[k]) return;
@@ -1598,6 +1599,8 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       if (SES) localStorage.setItem(XKEY, JSON.stringify(SES)); else localStorage.removeItem(XKEY);
     } catch (e) {}
   }
+  /* Données d'avant la synchro (sans date) : datées « anciennes », jamais « maintenant », pour ne pas écraser un autre appareil. */
+  try { LEG = true; stampAll(); } catch (e) {} LEG = false;
   function save(st) {
     S.scores[today] = st.total ? st.done / st.total : 0;
     persistAll();
@@ -2706,6 +2709,22 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     });
     return out;
   }
+  function syLog(A, B, del, lu) {
+    var la = A.S.log || {}, lb = B.S.log || {}, ua = A.S.lu || {}, ub = B.S.lu || {}, out = {}, days = {};
+    Object.keys(la).concat(Object.keys(lb)).forEach(function (d) { days[d] = 1; });
+    Object.keys(days).forEach(function (d) {
+      var ids = {}, order = [], xa = la[d] || [], xb = lb[d] || [], res = [], dt = Math.max(ua['l:' + d] || 0, ub['l:' + d] || 0);
+      xa.concat(xb).forEach(function (id) { if (!ids[id]) { ids[id] = 1; order.push(id); } });
+      order.forEach(function (id) {
+        var k = 'c:' + d + ':' + id, ta = xa.indexOf(id) >= 0 ? (ua[k] || 1) : -1, tb = xb.indexOf(id) >= 0 ? (ub[k] || 1) : -1, t = Math.max(ta, tb);
+        if ((del[k] || 0) > t) return;
+        delete del[k]; lu[k] = t; res.push(id);
+      });
+      if ((del['l:' + d] || 0) > dt && !res.length) return;
+      delete del['l:' + d]; res.sort(); out[d] = res; lu['l:' + d] = dt;
+    });
+    return out;
+  }
   function syMerge(A, B) {
     if (!A && !B) return null;
     A = A || syEmpty(); B = B || syEmpty();
@@ -2714,8 +2733,10 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     m.S.habits = syItems(A.S.habits, B.S.habits, 'h:', del);
     m.S.tasks = syItems(A.S.tasks, B.S.tasks, 't:', del);
     m.S.projects = syItems(A.S.projects, B.S.projects, 'p:', del);
-    m.S.log = syDays(A.S.log, B.S.log, A.S.lu || {}, B.S.lu || {}, 'l:', del, lu);
+    m.S.log = syLog(A, B, del, lu);
     m.S.scores = syDays(A.S.scores, B.S.scores, A.S.lu || {}, B.S.lu || {}, 's:', del, lu);
+    var tk = dkey(new Date());
+    Object.keys(m.S.scores).forEach(function (d) { var x = A.S.scores || {}, y = B.S.scores || {}; if (d < tk && d in x && d in y) m.S.scores[d] = Math.max(+x[d] || 0, +y[d] || 0); });
     Object.keys(del).forEach(function (k) { if (now - del[k] > TOMB_MS) delete del[k]; });
     m.S.del = del; m.S.lu = lu;
     var a = A.F, b = B.F, f = m.F;
