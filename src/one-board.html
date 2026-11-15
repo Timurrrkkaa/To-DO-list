@@ -2183,7 +2183,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     WD.w = w; WD.h = h; WD.dpr = dpr;
     var span = 2.83 * (WD.ext + 0.6);
-    WD.base = Math.max(14, Math.min(0.94 * w / span, 0.8 * h / (span * 0.75 + 2.6), 130));
+    WD.base = Math.max(14, Math.min(1.5 * w / span, 1.25 * h / (span * 0.75 + 2.6), 150));
   }
   function worldProj(gx, gy) {
     var c = Math.cos(WD.th), sn = Math.sin(WD.th), rx = gx * c - gy * sn, ry = gx * sn + gy * c, U = WD.base * WD.zoom;
@@ -3143,7 +3143,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
   }
   function syInit() {
     try { if (sessionStorage.getItem('ob-removed')) { sessionStorage.removeItem('ob-removed'); toast(T('syRemoved')); } } catch (e) {}
-    if (window.OB_TEST) window.__OB = { merge: syMerge, pack: syPack, key: syKey, SY: SY, run: syRun, S: function () { return S; }, F: function () { return F; } };
+    if (window.OB_TEST) window.__OB = { merge: syMerge, pack: syPack, key: syKey, SY: SY, run: syRun, S: function () { return S; }, F: function () { return F; }, WD: WD };
     SY.be = window.OB_SYNC || (window.claude ? syPreview() : null);
     try { SY.reg = +localStorage.getItem('ob-sync-reg') || 0; SY.seen = !!localStorage.getItem('ob-sync-seen'); } catch (e) {}
     if (!SY.be) return;
