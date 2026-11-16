@@ -2224,7 +2224,7 @@ button.chip:hover { border-color: var(--faint); color: var(--fg); }
       var hasT = F.islands.some(function (o) { return o.test; });
       html += '<p class="small" style="margin:12px 0 0">' + esc(T('tstNote')) + '</p><div class="archfoot"><button class="btn alt" type="button" data-act="tstadd">' + esc(T('tstAdd')) + '</button>' + (hasT ? '<button class="btn alt" type="button" data-act="tstdel">' + esc(T('tstDel')) + '</button>' : '') + '</div>';
     }
-    html += '<div class="archfoot">' + (list.length ? '<button class="btn" type="button" data-act="wopen">' + esc(T('worldBtn')) + '</button>' : '') + (list.length > 12 ? '<button class="btn alt" type="button" data-act="all">' + esc(ui.all ? T('showLess') : T('showAll')) + '</button>' : '') + '<button class="btn alt" type="button" data-act="open">' + esc(T('change')) + '</button></div>';
+    html += '<div class="archfoot">' + (list.length ? '<button class="btn" type="button" data-act="wopen">' + esc(T('worldBtn')) + '</button>' : '') + (list.length > 12 ? '<button class="btn alt" type="button" data-act="all">' + esc(ui.all ? T('showLess') : T('showAll')) + '</button>' : '') + '</div>';
     el.innerHTML = html;
   }
 
